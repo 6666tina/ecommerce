@@ -1,45 +1,108 @@
 from flask import Flask, request, jsonify
-from db import db
-from models import User, Product, Order
+from flask_cors import CORS
+import sqlite3
+import os
+from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///ecommerce.db'
-db.init_app(app)
+CORS(app)
 
-@app.before_first_request
-def create_tables():
-    db.create_all()
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DB_PATH = os.path.join(BASE_DIR, "database.db")
 
-# 用户注册
-@app.route('/register', methods=['POST'])
+
+def get_db():
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    return conn
+
+
+# 初始化数据库（第一次运行用）
+def init_db():
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT UNIQUE NOT NULL,
+            password_hash TEXT NOT NULL
+        )
+    """)
+    conn.commit()
+    conn.close()
+
+
+@app.route("/api/register", methods=["POST"])
 def register():
-    data = request.json
-    user = User(username=data['username'], password=data['password'])
-    db.session.add(user)
-    db.session.commit()
-    return jsonify({"msg": "register success"})
+    data = request.get_json()
+    print("【REGISTER 收到的数据】", data)
 
-# 商品列表
-@app.route('/products', methods=['GET'])
-def products():
-    products = Product.query.all()
-    return jsonify([
-        {"id": p.id, "name": p.name, "price": p.price}
-        for p in products
-    ])
+    username = data.get("username")
+    password = data.get("password")
 
-# 创建订单
-@app.route('/order', methods=['POST'])
-def create_order():
-    data = request.json
-    order = Order(
-        user_id=data['user_id'],
-        product_id=data['product_id'],
-        quantity=data['quantity']
-    )
-    db.session.add(order)
-    db.session.commit()
-    return jsonify({"msg": "order created"})
+    if not username or not password:
+        return jsonify({"msg": "用户名或密码不能为空"}), 400
 
-if __name__ == '__main__':
+    password_hash = generate_password_hash(password)
+
+    try:
+        conn = get_db()
+        cursor = conn.cursor()
+        # 先检查用户名是否存在
+        cursor.execute("SELECT * FROM users WHERE username = ?", (username,))
+        if cursor.fetchone():
+            conn.close()
+            return jsonify({"msg": "用户名已存在"}), 400
+
+        cursor.execute(
+            "INSERT INTO users (username, password_hash) VALUES (?, ?)",
+            (username, password_hash)
+        )
+        conn.commit()
+        conn.close()
+        return jsonify({"msg": "注册成功"}), 200
+
+    except Exception as e:
+        print("【REGISTER 错误】", e)
+        return jsonify({"msg": "注册失败"}), 500
+
+
+@app.route("/api/login", methods=["POST"])
+def login():
+    data = request.get_json()
+    print("【LOGIN 收到的数据】", data)
+
+    username = data.get("username")
+    password = data.get("password")
+
+    if not username or not password:
+        return jsonify({"msg": "用户名或密码不能为空"}), 400
+
+    try:
+        conn = get_db()
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM users WHERE username = ?", (username,))
+        user = cursor.fetchone()
+        conn.close()
+
+        print("【LOGIN 查到的用户】", dict(user) if user else None)
+
+        if user is None or not check_password_hash(user["password_hash"], password):
+            return jsonify({"msg": "用户名或密码错误"}), 401
+
+        return jsonify({"msg": "登录成功"}), 200
+
+    except Exception as e:
+        print("【LOGIN 错误】", e)
+        return jsonify({"msg": "登录失败"}), 500
+
+
+@app.route("/test")
+def test():
+    return jsonify({"msg": "backend ok"})
+
+
+if __name__ == "__main__":
+    print("数据库路径：", DB_PATH)
+    init_db()
     app.run(debug=True)

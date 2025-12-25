@@ -4,7 +4,6 @@
     <meta charset="UTF-8" />
     <title>系统主页</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
     <link rel="stylesheet" href="main.css" />
 </head>
 
@@ -23,17 +22,16 @@
         <!-- 左侧菜单 -->
         <aside class="sidebar">
             <ul>
-                <li class="active" onclick="loadPage('home')">首页</li>
-                <li onclick="loadPage('orders')">订单管理</li>
-                <li onclick="loadPage('products')">商品管理</li>
-                <li onclick="loadPage('users')">用户管理</li>
+                <li class="active" data-type="home" onclick="loadPage('home')">首页</li>
+                <li data-type="orders" onclick="loadPage('orders')">订单管理</li>
+                <li data-type="products" onclick="loadPage('products')">商品管理</li>
+                <li data-type="users" onclick="loadPage('users')">用户管理</li>
             </ul>
         </aside>
 
         <!-- 内容区 -->
         <main class="content" id="content">
-            <h2>欢迎进入系统</h2>
-            <p>请选择左侧功能模块。</p>
+            <!-- 页面内容由 JS 渲染 -->
         </main>
     </div>
 

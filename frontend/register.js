@@ -5,7 +5,7 @@ function main() {
     const confirmInput = document.getElementById("confirmPassword");
     const errorMsg = document.getElementById("errorMsg");
 
-    form.addEventListener("submit", function (e) {
+    form.addEventListener("submit", async function (e) {
         e.preventDefault();
 
         const username = usernameInput.value.trim();
@@ -29,11 +29,27 @@ function main() {
 
         errorMsg.textContent = "";
 
-        // 模拟注册成功
-        alert("注册成功，即将跳转到登录页面");
+        try {
+            const res = await fetch("http://127.0.0.1:5000/api/register", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ username, password })
+            });
 
-        // 跳转到登录页
-        window.location.href = "login.html";
+            const data = await res.json();
+
+            if (res.ok) {
+                alert("注册成功，即将跳转到登录页面");
+                window.location.href = "login.html";
+            } else {
+                errorMsg.textContent = data.msg || "注册失败";
+            }
+        } catch (err) {
+            console.error(err);
+            errorMsg.textContent = "网络错误";
+        }
     });
 }
 

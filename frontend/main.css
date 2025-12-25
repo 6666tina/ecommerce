@@ -5,7 +5,7 @@
 
 body {
     margin: 0;
-    background: #f4f6f8;
+    background: #fefdfd;
 }
 
 /* 顶部栏 */
@@ -63,3 +63,221 @@ body {
     padding: 20px;
     background: #f9fafb;
 }
+/* ===== 通用卡片 ===== */
+.card {
+    background: #ffffff;
+    border-radius: 6px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+/* ===== 首页 ===== */
+.dashboard-cards {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+}
+
+.dashboard-card {
+    background: #ffffff;
+    padding: 20px;
+    border-radius: 6px;
+}
+
+.dashboard-card h4 {
+    font-size: 14px;
+    color: #6b7280;
+}
+
+.dashboard-card p {
+    font-size: 24px;
+    margin-top: 10px;
+}
+
+/* ===== 工具栏 ===== */
+.toolbar {
+    margin-bottom: 15px;
+}
+
+.toolbar input,
+.toolbar select {
+    padding: 6px;
+    margin-right: 8px;
+}
+
+.toolbar button {
+    padding: 6px 12px;
+    background: #2563eb;
+    border: none;
+    color: #fff;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+/* ===== 表格 ===== */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #ffffff;
+}
+
+th, td {
+    padding: 10px;
+    border-bottom: 1px solid #e5e7eb;
+    text-align: left;
+}
+/* ===== 全局背景优化 ===== */
+body {
+    background: linear-gradient(120deg, #f0f4ff, #f9fafb);
+}
+.header {
+    background: linear-gradient(90deg, #4f46e5, #6366f1);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.header .logo {
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
+.header button {
+    background: rgba(255,255,255,0.2);
+    border: none;
+    padding: 6px 14px;
+    border-radius: 20px;
+    transition: 0.3s;
+}
+
+.header button:hover {
+    background: rgba(255,255,255,0.35);
+}
+.sidebar {
+    background: linear-gradient(180deg, #ffffff, #f1f5f9);
+    box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+}
+
+.sidebar li {
+    border-radius: 8px;
+    margin-bottom: 6px;
+    transition: all 0.2s ease;
+}
+
+.sidebar li:hover {
+    background: #e0e7ff;
+    transform: translateX(4px);
+}
+
+.sidebar li.active {
+    background: linear-gradient(90deg, #6366f1, #818cf8);
+    color: white;
+}
+.card {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 20px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+    transition: 0.3s;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+}
+.dashboard-card {
+    background: linear-gradient(135deg, #eef2ff, #ffffff);
+    border-radius: 14px;
+    padding: 24px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+    transition: 0.3s;
+}
+
+.dashboard-card:hover {
+    transform: translateY(-4px);
+}
+
+.dashboard-card h4 {
+    font-size: 14px;
+    color: #6b7280;
+}
+
+.dashboard-card p {
+    font-size: 28px;
+    font-weight: bold;
+    color: #4338ca;
+}
+button {
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+button:hover {
+    opacity: 0.85;
+}
+table {
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+thead {
+    background: #eef2ff;
+}
+
+th {
+    color: #4338ca;
+    font-weight: 600;
+}
+
+tbody tr:hover {
+    background: #f3f4f6;
+}
+/* ================= 页面切换动画 ================= */
+.content {
+    animation: fadeIn 0.4s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 卡片进入动画 */
+.card {
+    animation: cardFade 0.4s ease;
+}
+
+@keyframes cardFade {
+    from {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 按钮点击反馈 */
+button:active {
+    transform: scale(0.96);
+}
+
+/* 侧边栏选中动画增强 */
+.sidebar li {
+    transition: all 0.25s ease;
+}
+
+/* 表格行动画 */
+tbody tr {
+    transition: background 0.2s, transform 0.2s;
+}
+
+tbody tr:hover {
+    transform: scale(1.01);
+}
+
