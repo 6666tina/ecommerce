@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <title>用户注册</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link rel="stylesheet" href="register.css" />
+</head>
+
+<body>
+    <div class="register-container">
+        <h2>用户注册</h2>
+
+        <form id="registerForm">
+            <div class="form-group">
+                <label for="username">用户名</label>
+                <input type="text" id="username" placeholder="请输入用户名" />
+            </div>
+
+            <div class="form-group">
+                <label for="password">密码</label>
+                <input type="password" id="password" placeholder="请输入密码" />
+            </div>
+
+            <div class="form-group">
+                <label for="confirmPassword">确认密码</label>
+                <input type="password" id="confirmPassword" placeholder="请再次输入密码" />
+            </div>
+
+            <button type="submit" class="register-btn">注册</button>
+
+            <div class="error" id="errorMsg"></div>
+        </form>
+
+        <div class="footer">
+            已有账号？
+            <a href="login.html">去登录</a>
+        </div>
+    </div>
+
+    <script src="register.js"></script>
+</body>
+</html>

@@ -1,0 +1,65 @@
+* {
+    box-sizing: border-box;
+    font-family: "Segoe UI", Arial, sans-serif;
+}
+
+body {
+    margin: 0;
+    background: #f4f6f8;
+}
+
+/* 顶部栏 */
+.header {
+    height: 60px;
+    background: #1f2937;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 24px;
+}
+
+.header button {
+    background: #ef4444;
+    border: none;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+/* 主体布局 */
+.container {
+    display: flex;
+    height: calc(100vh - 60px);
+}
+
+/* 左侧菜单 */
+.sidebar {
+    width: 200px;
+    background: #111827;
+    color: white;
+}
+
+.sidebar ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar li {
+    padding: 14px 20px;
+    cursor: pointer;
+}
+
+.sidebar li:hover,
+.sidebar li.active {
+    background: #374151;
+}
+
+/* 内容区 */
+.content {
+    flex: 1;
+    padding: 20px;
+    background: #f9fafb;
+}
