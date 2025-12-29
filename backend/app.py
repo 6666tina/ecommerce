@@ -3,7 +3,7 @@ from flask_cors import CORS
 import sqlite3
 import os
 from werkzeug.security import generate_password_hash, check_password_hash
-from models import db,Product
+from models import db,Product,Order
 
 app = Flask(__name__)
 CORS(app)
@@ -23,6 +23,23 @@ def get_db():
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     return conn
+
+def init_order_data():
+    with app.app_context():
+        if Order.query.count() == 0:
+            orders = [
+                Order(order_no="1001", user="张三", amount=120, status="待付款"),
+                Order(order_no="1002", user="李四", amount=350, status="待发货"),
+                Order(order_no="1003", user="王五", amount=220, status="已完成"),
+                Order(order_no="1004", user="赵六", amount=150, status="待付款"),
+                Order(order_no="1005", user="孙七", amount=410, status="待发货"),
+                Order(order_no="1006", user="孙七", amount=200, status="待发货"),
+                Order(order_no="1007", user="赵六", amount=50, status="待付款"),
+            ]
+            db.session.add_all(orders)
+            db.session.commit()
+            print("【订单初始化完成】")
+
 
 
 # 初始化数据库（第一次运行用）
@@ -151,8 +168,53 @@ def get_total_stock():
     total_stock = sum(p.stock for p in products)
     return jsonify({"total": total_stock})
 
+@app.route("/api/orders")
+def get_orders():
+    order_no = request.args.get("order_no", "")
+    user = request.args.get("user", "")
+    status = request.args.get("status", "")
+
+    query = Order.query
+
+    if order_no:
+        query = query.filter(Order.order_no.contains(order_no))
+    if user:
+        query = query.filter(Order.user.contains(user))
+    if status:
+        query = query.filter(Order.status == status)
+
+    orders = query.all()
+
+    return jsonify([
+        {
+            "id": o.id,
+            "order_no": o.order_no,
+            "user": o.user,
+            "amount": o.amount,
+            "status": o.status
+        } for o in orders
+    ])
+
+@app.route("/api/orders/<int:order_id>/status", methods=["PUT"])
+def update_order_status(order_id):
+    data = request.get_json()
+    status = data.get("status")
+
+    if not status:
+        return jsonify({"msg": "状态不能为空"}), 400
+
+    order = Order.query.get(order_id)
+    if not order:
+        return jsonify({"msg": "订单不存在"}), 404
+
+    order.status = status
+    db.session.commit()
+
+    return jsonify({"msg": "订单状态更新成功"})
+
 
 if __name__ == "__main__":
     print("数据库路径：", DB_PATH)
     init_db()
+    init_order_data() 
     app.run(debug=True)
