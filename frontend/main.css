@@ -38,7 +38,7 @@ body {
 .sidebar {
     width: 200px;
     background: #111827;
-    color: white;
+    color: rgb(251, 2, 2);
 }
 
 .sidebar ul {
