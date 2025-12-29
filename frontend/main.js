@@ -27,6 +27,48 @@ function loadTotalStock() {
         });
 }
 
+                // 写死 10 条订单数据
+                const orders = [
+                    { id: "1001", user: "张三", amount: 120, status: "待付款" },
+                    { id: "1002", user: "李四", amount: 350, status: "待发货" },
+                    { id: "1003", user: "王五", amount: 220, status: "已完成" },
+                    { id: "1004", user: "赵六", amount: 150, status: "待付款" },
+                    { id: "1005", user: "孙七", amount: 410, status: "待发货" },
+                    { id: "1006", user: "周八", amount: 300, status: "已完成" },
+                    { id: "1007", user: "吴九", amount: 280, status: "待付款" },
+                    { id: "1008", user: "郑十", amount: 500, status: "待发货" },
+                    { id: "1009", user: "钱十一", amount: 330, status: "已完成" },
+                    { id: "1010", user: "刘十二", amount: 210, status: "待付款" },
+                    { id: "1011", user: "张三", amount: 120, status: "待付款" },
+                ];
+
+function filterOrders() {
+    const orderId = document.getElementById("orderInput").value.trim();
+    const username = document.getElementById("userInput").value.trim();
+    const status = document.getElementById("statusSelect").value;
+
+    // 筛选订单
+    const filtered = orders.filter(o => {
+        return (!orderId || o.id.includes(orderId)) &&
+               (!username || o.user.includes(username)) &&
+               (!status || o.status === status);
+    });
+
+    // 渲染表格
+    const tbody = document.getElementById("orderTable");
+    tbody.innerHTML = "";
+    filtered.forEach(o => {
+        tbody.innerHTML += `
+            <tr>
+                <td>${o.id}</td>
+                <td>${o.user}</td>
+                <td>${o.amount}</td>
+                <td>${o.status}</td>
+                <td><button onclick="alert('操作：${o.id}')">处理</button></td>
+            </tr>
+        `;
+    });
+}
 
 function loadPage(type) {
     const content = document.getElementById("content");
@@ -38,19 +80,24 @@ function loadPage(type) {
     setTimeout(() => {
         switch (type) {
             case "home":
+                const totalOrders = orders.length;
+                const totalSales = orders.reduce((sum, o) => sum + o.amount, 0);
+                const uniqueUsers = new Set(orders.map(o => o.user));
+                const userCount = uniqueUsers.size;
+
                 content.innerHTML = `
                     <div class="dashboard-cards">
                         <div class="dashboard-card">
-                            <h4>订单总览</h4>
-                            <p>—</p>
+                            <h4>订单总数</h4>
+                            <p id="totalOrders">${orders.length}</p>
                         </div>
                         <div class="dashboard-card">
                             <h4>销售额</h4>
-                            <p>—</p>
+                            <p id="totalSales">${orders.reduce((sum, o) => sum + o.amount, 0)}</p>
                         </div>
                         <div class="dashboard-card">
                             <h4>用户数量</h4>
-                            <p>—</p>
+                            <p id="totalUsers">${userCount}</p>
                         </div>
                         <div class="dashboard-card">
                             <h4>商品数量</h4>
@@ -73,17 +120,18 @@ function loadPage(type) {
                 content.innerHTML = `
                     <div class="card">
                         <h2>订单管理</h2>
-                        <div class="toolbar">
-                            <input placeholder="订单号">
-                            <input placeholder="用户名">
-                            <select>
-                                <option>全部状态</option>
-                                <option>待付款</option>
-                                <option>待发货</option>
-                                <option>已完成</option>
+                       <div class="toolbar">
+                            <input id="orderInput" placeholder="订单号">
+                            <input id="userInput" placeholder="用户名">
+                            <select id="statusSelect">
+                                <option value="">全部状态</option>
+                                <option value="待付款">待付款</option>
+                                <option value="待发货">待发货</option>
+                                <option value="已完成">已完成</option>
                             </select>
-                            <button>查询</button>
+                            <button onclick="filterOrders()">查询</button>
                         </div>
+
                         <table>
                             <thead>
                                 <tr>
@@ -94,10 +142,24 @@ function loadPage(type) {
                                     <th>操作</th>
                                 </tr>
                             </thead>
-                            <tbody></tbody>
+                            <tbody id="orderTable"></tbody>
                         </table>
                     </div>
                 `;
+
+
+                const tbody = document.getElementById("orderTable");
+                orders.forEach(o => {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${o.id}</td>
+                            <td>${o.user}</td>
+                            <td>${o.amount}</td>
+                            <td>${o.status}</td>
+                            <td><button onclick="alert('操作：${o.id}')">处理</button></td>
+                        </tr>
+                    `;
+                });
                 break;
 
            case "products":
