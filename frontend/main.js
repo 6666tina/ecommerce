@@ -1,8 +1,24 @@
+let orders = [];
+
+function loadOrders(callback) {
+    fetch("http://127.0.0.1:5000/api/orders")
+        .then(res => res.json())
+        .then(data => {
+            orders = data;
+            if (callback) callback();
+        });
+}
+
 function main() {
     const username = localStorage.getItem("username") || "用户";
     document.getElementById("username").innerText = `欢迎，${username}`;
-    loadPage("home");
+
+    // 关键：先加载订单，再进首页
+    loadOrders(() => {
+        loadPage("home");
+    });
 }
+
 
 function setActive(type) {
     document.querySelectorAll(".sidebar li").forEach(li => {
@@ -27,48 +43,21 @@ function loadTotalStock() {
         });
 }
 
-                // 写死 10 条订单数据
-                const orders = [
-                    { id: "1001", user: "张三", amount: 120, status: "待付款" },
-                    { id: "1002", user: "李四", amount: 350, status: "待发货" },
-                    { id: "1003", user: "王五", amount: 220, status: "已完成" },
-                    { id: "1004", user: "赵六", amount: 150, status: "待付款" },
-                    { id: "1005", user: "孙七", amount: 410, status: "待发货" },
-                    { id: "1006", user: "周八", amount: 300, status: "已完成" },
-                    { id: "1007", user: "吴九", amount: 280, status: "待付款" },
-                    { id: "1008", user: "郑十", amount: 500, status: "待发货" },
-                    { id: "1009", user: "钱十一", amount: 330, status: "已完成" },
-                    { id: "1010", user: "刘十二", amount: 210, status: "待付款" },
-                    { id: "1011", user: "张三", amount: 120, status: "待付款" },
-                ];
 
 function filterOrders() {
-    const orderId = document.getElementById("orderInput").value.trim();
+    const orderNo = document.getElementById("orderInput").value.trim();
     const username = document.getElementById("userInput").value.trim();
     const status = document.getElementById("statusSelect").value;
 
-    // 筛选订单
     const filtered = orders.filter(o => {
-        return (!orderId || o.id.includes(orderId)) &&
+        return (!orderNo || o.order_no.includes(orderNo)) &&
                (!username || o.user.includes(username)) &&
                (!status || o.status === status);
     });
 
-    // 渲染表格
-    const tbody = document.getElementById("orderTable");
-    tbody.innerHTML = "";
-    filtered.forEach(o => {
-        tbody.innerHTML += `
-            <tr>
-                <td>${o.id}</td>
-                <td>${o.user}</td>
-                <td>${o.amount}</td>
-                <td>${o.status}</td>
-                <td><button onclick="alert('操作：${o.id}')">处理</button></td>
-            </tr>
-        `;
-    });
+    renderOrders(filtered);
 }
+
 
 function loadPage(type) {
     const content = document.getElementById("content");
@@ -115,52 +104,45 @@ function loadPage(type) {
                 `;
                 loadTotalStock();
                 break;
+                case "orders":
+                    content.innerHTML = `
+                        <div class="card">
+                            <h2>订单管理</h2>
 
-            case "orders":
-                content.innerHTML = `
-                    <div class="card">
-                        <h2>订单管理</h2>
-                       <div class="toolbar">
-                            <input id="orderInput" placeholder="订单号">
-                            <input id="userInput" placeholder="用户名">
-                            <select id="statusSelect">
-                                <option value="">全部状态</option>
-                                <option value="待付款">待付款</option>
-                                <option value="待发货">待发货</option>
-                                <option value="已完成">已完成</option>
-                            </select>
-                            <button onclick="filterOrders()">查询</button>
+                            <div class="toolbar">
+                                <input id="orderInput" placeholder="订单号">
+                                <input id="userInput" placeholder="用户名">
+                                <select id="statusSelect">
+                                    <option value="">全部状态</option>
+                                    <option value="待付款">待付款</option>
+                                    <option value="待发货">待发货</option>
+                                    <option value="已完成">已完成</option>
+                                </select>
+                                <button onclick="filterOrders()">查询</button>
+                            </div>
+
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>订单号</th>
+                                        <th>用户</th>
+                                        <th>金额</th>
+                                        <th>状态</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="orderTable"></tbody>
+                            </table>
                         </div>
-
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>订单号</th>
-                                    <th>用户</th>
-                                    <th>金额</th>
-                                    <th>状态</th>
-                                    <th>操作</th>
-                                </tr>
-                            </thead>
-                            <tbody id="orderTable"></tbody>
-                        </table>
-                    </div>
-                `;
-
-
-                const tbody = document.getElementById("orderTable");
-                orders.forEach(o => {
-                    tbody.innerHTML += `
-                        <tr>
-                            <td>${o.id}</td>
-                            <td>${o.user}</td>
-                            <td>${o.amount}</td>
-                            <td>${o.status}</td>
-                            <td><button onclick="alert('操作：${o.id}')">处理</button></td>
-                        </tr>
                     `;
-                });
-                break;
+                    if (orders.length === 0) 
+                    {
+                        loadOrders(() => renderOrders(orders));
+                    } else {
+                        renderOrders(orders);
+                    }
+                    break;
+
 
            case "products":
                 content.innerHTML = `
@@ -317,6 +299,54 @@ function renderProductTable(list) {
                 <td>${p.stock}</td>
             </tr>
         `;
+    });
+}
+
+function renderOrders(list) {
+    const tbody = document.getElementById("orderTable");
+    tbody.innerHTML = "";
+
+    list.forEach(o => {
+        tbody.innerHTML += `
+            <tr>
+                <td>${o.order_no}</td>
+                <td>${o.user}</td>
+                <td>${o.amount}</td>
+                <td>${o.status}</td>
+                <td>
+                    ${o.status === "待付款" ? 
+                        '<span>不可修改</span>' : 
+                        `<select id="statusSelect_${o.id}">
+                            <option value="待发货" ${o.status==="待发货"?"selected":""}>待发货</option>
+                            <option value="已完成" ${o.status==="已完成"?"selected":""}>已完成</option>
+                        </select>
+                        <button onclick="changeOrderStatus(${o.id})">修改</button>`
+                    }
+                </td>
+            </tr>
+        `;
+    });
+}
+
+
+function changeOrderStatus(orderId) {
+    const select = document.getElementById(`statusSelect_${orderId}`);
+    const newStatus = select.value;
+
+    fetch(`http://127.0.0.1:5000/api/orders/${orderId}/status`, {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ status: newStatus })
+    })
+    .then(res => res.json())
+    .then(data => {
+        alert(data.msg);
+        loadOrders(() => renderOrders(orders));
+    })
+    .catch(err => {
+        console.error("修改订单状态失败", err);
     });
 }
 
