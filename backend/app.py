@@ -3,6 +3,7 @@ from flask_cors import CORS
 import sqlite3
 import os
 from werkzeug.security import generate_password_hash, check_password_hash
+from models import db,Product
 
 app = Flask(__name__)
 CORS(app)
@@ -10,6 +11,13 @@ CORS(app)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.path.join(BASE_DIR, "database.db")
 
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///ecommerce.db"
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
+db.init_app(app)
+
+with app.app_context():
+    db.create_all()
 
 def get_db():
     conn = sqlite3.connect(DB_PATH)
@@ -100,6 +108,48 @@ def login():
 @app.route("/test")
 def test():
     return jsonify({"msg": "backend ok"})
+
+@app.route("/api/products", methods=["POST"])
+def add_product():
+    data = request.json
+
+    name = data.get("name")
+    price = data.get("price")
+    stock = data.get("stock")
+
+    if not name or price is None or stock is None:
+        return jsonify({"msg": "参数不完整"}), 400
+
+    product = Product(name=name, price=price, stock=stock)
+    db.session.add(product)
+    db.session.commit()
+
+    return jsonify({"msg": "商品新增成功"})
+
+@app.route("/api/products", methods=["GET"])
+def search_products():
+    keyword = request.args.get("keyword", "")
+
+    products = Product.query.filter(
+        Product.name.contains(keyword)
+    ).all()
+
+    result = []
+    for p in products:
+        result.append({
+            "id": p.id,
+            "name": p.name,
+            "price": p.price,
+            "stock": p.stock
+        })
+
+    return jsonify(result)
+
+@app.route("/api/products/total-stock", methods=["GET"])
+def get_total_stock():
+    products = Product.query.all()
+    total_stock = sum(p.stock for p in products)
+    return jsonify({"total": total_stock})
 
 
 if __name__ == "__main__":

@@ -13,6 +13,21 @@ function setActive(type) {
     });
 }
 
+function loadTotalStock() {
+    fetch("http://127.0.0.1:5000/api/products/total-stock")
+        .then(res => res.json())
+        .then(data => {
+            const el = document.getElementById("totalStock");
+            if (el) {
+                el.innerText = data.total;
+            }
+        })
+        .catch(err => {
+            console.error("获取商品库存失败", err);
+        });
+}
+
+
 function loadPage(type) {
     const content = document.getElementById("content");
     setActive(type);
@@ -39,7 +54,7 @@ function loadPage(type) {
                         </div>
                         <div class="dashboard-card">
                             <h4>商品数量</h4>
-                            <p>—</p>
+                            <p id="totalStock">—</p>
                         </div>
                     </div>
 
@@ -51,6 +66,7 @@ function loadPage(type) {
                         </ul>
                     </div>
                 `;
+                loadTotalStock();
                 break;
 
             case "orders":
@@ -84,15 +100,19 @@ function loadPage(type) {
                 `;
                 break;
 
-            case "products":
+           case "products":
                 content.innerHTML = `
                     <div class="card">
                         <h2>商品管理</h2>
+
+                        <!-- 工具栏 -->
                         <div class="toolbar">
-                            <input placeholder="商品名称">
-                            <button>搜索</button>
-                            <button>新增商品</button>
+                            <input id="searchInput" placeholder="商品名称">
+                            <button onclick="searchProducts()">搜索</button>
+                            <button onclick="openAddProductModal()">新增商品</button>
                         </div>
+
+                        <!-- 商品表格 -->
                         <table>
                             <thead>
                                 <tr>
@@ -100,41 +120,33 @@ function loadPage(type) {
                                     <th>商品名</th>
                                     <th>价格</th>
                                     <th>库存</th>
-                                    <th>状态</th>
-                                    <th>操作</th>
                                 </tr>
                             </thead>
-                            <tbody></tbody>
+                            <tbody id="productTable"></tbody>
                         </table>
                     </div>
-                `;
-                break;
 
-            case "users":
-                content.innerHTML = `
-                    <div class="card">
-                        <h2>用户管理</h2>
-                        <div class="toolbar">
-                            <input placeholder="用户名">
-                            <button>查询</button>
+                    <!-- 新增商品弹窗 -->
+                    <div id="productModal" class="modal" style="display:none;">
+                        <div class="modal-content">
+                            <h3>新增商品</h3>
+
+                            <input id="modalName" placeholder="商品名称">
+                            <input id="modalPrice" type="number" placeholder="价格">
+                            <input id="modalStock" type="number" placeholder="库存">
+
+                            <div class="modal-actions">
+                                <button onclick="submitProduct()">确认</button>
+                                <button onclick="closeAddProductModal()">取消</button>
+                            </div>
                         </div>
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>用户名</th>
-                                    <th>角色</th>
-                                    <th>状态</th>
-                                    <th>操作</th>
-                                </tr>
-                            </thead>
-                            <tbody></tbody>
-                        </table>
                     </div>
                 `;
-                break;
-        }
 
+                searchProducts();
+                break;
+
+        }
         // 淡入
         content.style.opacity = 1;
     }, 120);
@@ -145,5 +157,106 @@ function logout() {
     localStorage.removeItem("username");
     window.location.href = "login.html";
 }
+
+function searchProducts() {
+    const keyword = document.getElementById("searchInput").value || "";
+
+    fetch(`http://127.0.0.1:5000/api/products?keyword=${keyword}`)
+        .then(res => res.json())
+        .then(data => {
+            renderProductTable(data);
+        })
+        .catch(err => {
+            console.error("获取商品失败", err);
+        });
+}
+
+function openAddProductModal() {
+    document.getElementById("productModal").style.display = "flex";
+}
+
+function closeAddProductModal() {
+    document.getElementById("productModal").style.display = "none";
+
+    // 清空输入框
+    document.getElementById("modalName").value = "";
+    document.getElementById("modalPrice").value = "";
+    document.getElementById("modalStock").value = "";
+}
+
+function submitProduct() {
+    const name = document.getElementById("modalName").value.trim();
+    const price = document.getElementById("modalPrice").value;
+    const stock = document.getElementById("modalStock").value;
+
+    if (!name || !price || !stock) {
+        alert("请填写完整商品信息");
+        return;
+    }
+
+    fetch("http://127.0.0.1:5000/api/products", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            name: name,
+            price: Number(price),
+            stock: Number(stock)
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        alert(data.msg);
+        closeAddProductModal();
+        searchProducts(); // 刷新商品列表
+    });
+}
+
+
+function addProduct() {
+    const name = document.getElementById("pname").value.trim();
+    const price = document.getElementById("pprice").value;
+    const stock = document.getElementById("pstock").value;
+
+    if (!name || !price || !stock) {
+        alert("请填写完整商品信息");
+        return;
+    }
+
+    fetch("http://127.0.0.1:5000/api/products", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            name: name,
+            price: Number(price),
+            stock: Number(stock)
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        alert(data.msg);
+        searchProducts();   // 刷新表格
+    });
+}
+
+function renderProductTable(list) {
+    const tbody = document.getElementById("productTable");
+    tbody.innerHTML = "";
+
+    list.forEach(p => {
+        tbody.innerHTML += `
+            <tr>
+                <td>${p.id}</td>
+                <td>${p.name}</td>
+                <td>${p.price}</td>
+                <td>${p.stock}</td>
+            </tr>
+        `;
+    });
+}
+
 
 document.addEventListener("DOMContentLoaded", main);
