@@ -164,6 +164,7 @@ function loadPage(type) {
                                     <th>商品名</th>
                                     <th>价格</th>
                                     <th>库存</th>
+                                    <th>操作</th>
                                 </tr>
                             </thead>
                             <tbody id="productTable"></tbody>
@@ -296,9 +297,92 @@ function renderProductTable(list) {
                 <td>${p.id}</td>
                 <td>${p.name}</td>
                 <td>${p.price}</td>
-                <td>${p.stock}</td>
+                <td>
+                    <input
+                        type="number"
+                        min="0"
+                        value="${p.stock}"
+                        style="width:70px"
+                        onblur="updateStockDirect(${p.id}, this.value)"
+                        onkeydown="if(event.key==='Enter'){ this.blur(); }"
+                    />
+                </td>
+                <td>
+                    <button onclick="deleteProduct(${p.id})" style="color:red">删除</button>
+                </td>
             </tr>
         `;
+    });
+}
+
+function updateStockDirect(productId, newStock) {
+    newStock = Number(newStock);
+
+    if (isNaN(newStock) || newStock < 0) {
+        alert("库存必须是非负整数");
+        searchProducts();
+        return;
+    }
+
+    fetch(`http://127.0.0.1:5000/api/products/${productId}/stock-direct`, {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ stock: newStock })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            loadTotalStock();
+        } else {
+            alert(data.msg);
+            searchProducts();
+        }
+    })
+    .catch(err => {
+        console.error("库存修改失败", err);
+        searchProducts();
+    });
+}
+
+
+function changeStock(productId, delta) {
+    fetch(`http://127.0.0.1:5000/api/products/${productId}/stock`, {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ delta })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            searchProducts(); // 刷新商品列表
+            loadTotalStock(); // 同步刷新首页商品数量
+        } else {
+            alert(data.msg);
+        }
+    })
+    .catch(err => {
+        console.error("修改库存失败", err);
+    });
+}
+
+function deleteProduct(productId) {
+    if (!confirm("确认删除该商品吗？")) return;
+
+    fetch(`http://127.0.0.1:5000/api/products/${productId}`, {
+        method: "DELETE"
+    })
+    .then(res => res.json())
+    .then(data => {
+        alert(data.msg);
+        searchProducts();   // 刷新商品表
+        loadTotalStock();  // 同步刷新首页统计
+    })
+    .catch(err => {
+        console.error("删除商品失败", err);
     });
 }
 
