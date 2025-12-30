@@ -168,6 +168,17 @@ def get_total_stock():
     total_stock = sum(p.stock for p in products)
     return jsonify({"total": total_stock})
 
+@app.route("/api/products/<int:pid>", methods=["DELETE"])
+def delete_product(pid):
+    product = Product.query.get(pid)
+    if not product:
+        return jsonify({"msg": "商品不存在"}), 404
+
+    db.session.delete(product)
+    db.session.commit()
+
+    return jsonify({"msg": "删除成功"})
+
 @app.route("/api/orders")
 def get_orders():
     order_no = request.args.get("order_no", "")
@@ -212,6 +223,42 @@ def update_order_status(order_id):
 
     return jsonify({"msg": "订单状态更新成功"})
 
+@app.route("/api/products/<int:pid>/stock", methods=["PUT"])
+def change_product_stock(pid):
+    data = request.get_json()
+    delta = data.get("delta")
+
+    if delta is None:
+        return jsonify({"success": False, "msg": "参数缺失"}), 400
+
+    product = Product.query.get(pid)
+    if not product:
+        return jsonify({"success": False, "msg": "商品不存在"}), 404
+
+    if product.stock + delta < 0:
+        return jsonify({"success": False, "msg": "库存不足"}), 400
+
+    product.stock += delta
+    db.session.commit()
+
+    return jsonify({"success": True})
+
+@app.route("/api/products/<int:pid>/stock-direct", methods=["PUT"])
+def set_product_stock(pid):
+    data = request.get_json()
+    stock = data.get("stock")
+
+    if stock is None or stock < 0:
+        return jsonify({"success": False, "msg": "库存值非法"}), 400
+
+    product = Product.query.get(pid)
+    if not product:
+        return jsonify({"success": False, "msg": "商品不存在"}), 404
+
+    product.stock = stock
+    db.session.commit()
+
+    return jsonify({"success": True})
 
 if __name__ == "__main__":
     print("数据库路径：", DB_PATH)
