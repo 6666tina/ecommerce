@@ -17,50 +17,131 @@
 在项目初期，明确系统的核心目标为构建一个具备基础管理功能的电商系统。通过分析系统需求，确定系统应包含商品管理与订单管理两个主要模块，并具备清晰的页面结构与操作流程。
 
 在此阶段完成了系统整体框架设计，并明确采用前端页面模拟业务逻辑的方式实现系统功能。
+核心代码示例
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>电商管理系统</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>电商管理系统</h1>
+
+  <nav>
+    <button onclick="goPage('product')">商品管理</button>
+    <button onclick="goPage('order')">订单管理</button>
+  </nav>
+
+  <div id="content"></div>
+
+  <script src="main.js"></script>
+</body>
+</html>
+
+---
 
 【阶段二】系统结构搭建
 在系统结构设计阶段，完成了以下工作：
-
 设计系统页面结构，包括主页面、商品管理页面和订单管理页面；
-
 明确各页面之间的跳转关系；
-
 确定数据通过 JavaScript 对象进行模拟管理；
-
 搭建基本页面框架，为后续功能开发打下基础。
+
+核心代码示例
+
+```let products = [
+  { id: 1, name: "手机", price: 3999 },
+  { id: 2, name: "电脑", price: 5999 }
+];
+
+function renderProducts() {
+  let html = "<ul>";
+  products.forEach(p => {
+    html += `<li>${p.name} - ￥${p.price}
+      <button onclick="deleteProduct(${p.id})">删除</button>
+    </li>`;
+  });
+  html += "</ul>";
+  document.getElementById("content").innerHTML = html;
+}
+
+function deleteProduct(id) {
+  products = products.filter(p => p.id !== id);
+  renderProducts();
+}
+
+---
 
 【阶段三】商品管理功能实现
 在该阶段中，重点完成商品管理模块的开发，包括：
-
 商品信息展示功能；
-
 商品新增功能；
-
 商品修改功能；
-
 商品删除功能。
 
 通过对商品数据的增删改查操作，实现了商品管理的完整业务流程，使系统具备基本的管理能力。
+核心代码示例
+
+```let orders = [];
+
+function addOrder(productName) {
+  orders.push({
+    id: Date.now(),
+    name: productName,
+    status: "未发货"
+  });
+  renderOrders();
+}
+
+function renderOrders() {
+  let html = "<ul>";
+  orders.forEach(o => {
+    html += `<li>${o.name} - ${o.status}</li>`;
+  });
+  html += "</ul>";
+  document.getElementById("content").innerHTML = html;
+}
+
+---
 
 【阶段四】订单管理功能实现
 在完成商品管理模块后，进一步实现订单管理模块，主要包括：
-
 订单信息展示；
-
 订单新增与修改；
-
 订单删除操作。
-
 该模块模拟真实电商平台中的订单管理流程，使系统功能更加完整。
+核心代码示例
+
+```function goPage(type) {
+  if (type === "product") {
+    renderProducts();
+  } else if (type === "order") {
+    renderOrders();
+  }
+}
+
+---
 
 【阶段五】系统优化与完善
 在功能实现完成后，对系统进行整体优化，包括：
-
 优化页面结构与布局，提高界面友好性；
-
 统一代码风格，增强可读性与可维护性；
-
 对整体流程进行测试，确保系统运行稳定。
+核心代码示例
+
+```body {
+  font-family: "宋体", SimSun;
+  background-color: #f5f5f5;
+}
+
+button {
+  padding: 6px 12px;
+  margin: 5px;
+  cursor: pointer;
+}
 
 【阶段六】项目总结与文档整理
 在最终阶段，对系统进行全面测试，确保各功能模块运行正常。
@@ -76,11 +157,8 @@
 
 四、存在问题与改进方向
 当前系统未接入数据库，数据仅为前端模拟；
-
 系统未实现用户登录与权限控制；
-
 后续可引入后端服务提升系统完整性；
-
-
 可进一步优化界面交互体验。
+
 
